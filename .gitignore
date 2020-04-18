@@ -1,0 +1,16 @@
+
+.vscode/settings.json
+Examples/JavaFramework/.classpath
+Examples/JavaFramework/.project
+Examples/JavaFramework/.settings/org.eclipse.jdt.apt.core.prefs
+Examples/JavaFramework/.settings/org.eclipse.jdt.core.prefs
+Examples/JavaFramework/.settings/org.eclipse.m2e.core.prefs
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/dsp/AudioFile.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/dsp/FFT.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/dsp/Frame.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/dsp/Processor.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/example/TooSimple.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/Runner.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/shortname/ShortName.class
+Examples/JavaFramework/target/classes/at/jku/cp/spezi/Utils.class
+Examples/JavaFramework/target/test-classes/at/jku/cp/spezi/TestEval.class
