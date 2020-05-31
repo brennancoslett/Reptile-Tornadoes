@@ -11,12 +11,16 @@ def import_dir(input_dir):
     inputted_files = sorted(input_dir.rglob("*.wav"))   
     return inputted_files
 
-def calcFrameEnergies(file):
+def wavToSTFT(file):
         fs, audio = wav.read(str(file))
-        file_stft = stft.spectrogram(audio)#, padding = 1)
+        STFT = stft.spectrogram(audio)
+        frameLength = (audio.size/fs)/STFT.shape[1]
+        return STFT, frameLength
+    
+def calcFrameEnergies(file_path):
+        file_stft, frameLenth = wavToSTFT(file_path)
         numFrames = file_stft.shape[1]
         numBins = file_stft.shape[0]
-        frameLength = (audio/fs)/numFrames
         frame_energies = np.zeros(numFrames, dtype='complex128')
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):

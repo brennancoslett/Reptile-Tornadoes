@@ -1,4 +1,3 @@
-
 .vscode/settings.json
 Examples/JavaFramework/.classpath
 Examples/JavaFramework/.project
@@ -14,3 +13,5 @@ Examples/JavaFramework/target/classes/at/jku/cp/spezi/Runner.class
 Examples/JavaFramework/target/classes/at/jku/cp/spezi/shortname/ShortName.class
 Examples/JavaFramework/target/classes/at/jku/cp/spezi/Utils.class
 Examples/JavaFramework/target/test-classes/at/jku/cp/spezi/TestEval.class
+Training Data/train/train/pr/*
+*.pyc
