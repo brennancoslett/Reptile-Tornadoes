@@ -24,7 +24,7 @@ def calcFrameEnergies(file_path):
         frame_energies = np.zeros(numFrames, dtype='complex128')
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):
-                frame_energies[k] += (abs(Frame.real)**2) * (float((((.5*numBins)-j))) / (.5*numBins))**(-2.5)
+                frame_energies[k] += (abs(np.sqrt(Frame**2))) * (float((((.5*numBins)-j))) / (.5*numBins))**(-2.5)
                 # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
         frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
         frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
