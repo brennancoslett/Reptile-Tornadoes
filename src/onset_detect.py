@@ -6,7 +6,7 @@ def onsetDetector(input_dir):
     for file in inputted_files:
         frame_energies, frame_length = calcFrameEnergies(file)
         #print(str(frame_energies[0:100].std()**.5) + " " + str(frame_energies[0:150].std()**.5))
-        file_pp_min =  frame_energies[:100].std()
+        file_pp_min =  frame_energies[:150].mean()** .75
         # calculate peaks
         batch_size = 5
         filePeaks = []
