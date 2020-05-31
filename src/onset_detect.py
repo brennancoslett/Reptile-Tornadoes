@@ -26,7 +26,7 @@ def onsetDetector(input_dir):
         with logfile.open("w+") as f:
             for peak in filePeaks:
                 f.write(f'{(peak * frame_length):0.9f}\n')
-        print(str(logfile) + "created")
+        print(logfile.name + " Created")
                 
     
 
