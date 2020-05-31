@@ -18,7 +18,7 @@ def wavToSTFT(file):
         return STFT, frameLength
     
 def calcFrameEnergies(file_path):
-        file_stft, frameLenth = wavToSTFT(file_path)
+        file_stft, frameLength = wavToSTFT(file_path)
         numFrames = file_stft.shape[1]
         numBins = file_stft.shape[0]
         frame_energies = np.zeros(numFrames, dtype='complex128')
