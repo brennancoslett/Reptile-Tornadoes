@@ -16,8 +16,12 @@ def calcFrameEnergies(file):
         file_stft = stft.spectrogram(audio)#, padding = 1)
         numFrames = file_stft.shape[1]
         numBins = file_stft.shape[0]
+        frameLength = (audio/fs)/numFrames
         frame_energies = np.zeros(numFrames, dtype='complex128')
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):
                 frame_energies[k] += (abs(Frame.real)**2) * (float((((.5*numBins)-j))) / (.5*numBins))**(-2.5)
-        return frame_energies
+                # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
+        frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
+        frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
+        return frame_energies_norm, frameLength
