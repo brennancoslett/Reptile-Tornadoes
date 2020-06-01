@@ -80,7 +80,6 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
             
         fn = fn + (len(gtValues) - truthCursor)
         fp = fp + (len(prValues) - predictCursor)   
-        cumError *= 1e6
         evalValues.append([cumError, tp, fp, fn, file.name])
         
     avgCumError = 0
@@ -94,5 +93,9 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
        avgFp += subarray[2]
        avgFn += subarray[3]
     percentTrue = avgTp /(avgTp + avgFp + avgFn)
-    avgEvalValues = np.array([avgCumError,avgTp, avgFp, avgFn]) / len(evalValues)
+    avgCumError /= len(evalValues)
+    avgTp /= len(evalValues)
+    avgFp /= len(evalValues)
+    avgFn /= len(evalValues)
+    avgEvalValues = [avgCumError,avgTp, avgFp, avgFn]
     return [percentTrue, avgEvalValues, evalValues]  

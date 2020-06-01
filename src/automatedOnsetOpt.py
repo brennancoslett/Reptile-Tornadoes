@@ -4,24 +4,22 @@ import shutil
 class onsetOptimizer:
     def __init__(self, input_dir, minibatch_size = None):
         self.input_dir = Path(os.path.abspath(input_dir))
-        self.hyperParams = {
-            "batch_size": 7,
-            "pow" : 0.99,
-            "originSampleLen": 150}
+        self.defaultHyperParams = [7,0.99, 150]
+        self.hyperParams = [0,0,0]
         self.avgValues = []
         self.iteration = 0
-        self.input_dirLen = len(files_in_dir(self.input_dir))
+        self.input_dirLen = len(files_in_dir(input_dir))
         if minibatch_size is None:
             minibatch_size = [0, self.input_dirLen]
         self.mb = minibatch_size
         
     def update(self, updateVals, updateStep = [1, 0.05, 25]):
-        for i, key in enumerate(updateVals.keys()):
-            self.hyperParams[key] += updateVals[key] * updateStep[i]
+        for j in range(0, len(updateVals)):
+            self.hyperParams[j] = self.defaultHyperParams[j] + (updateVals[j] * updateStep[j])
     
     def doOnsetDetection(self):
-        detectOnsets(self.input_dir, self.hyperParams["batch_size"], 
-                     self.hyperParams["pow"], self.hyperParams["originSampleLen"], [self.mb[0],self.mb[1]])
+        detectOnsets(self.input_dir, self.hyperParams[0], 
+                     self.hyperParams[1], self.hyperParams[2], [self.mb[0],self.mb[1]])
     
     def copyFiles(self, newFolderName):
         
@@ -34,15 +32,23 @@ class onsetOptimizer:
         return copy_dir
     
     def evaluate(self):
-        copied_dir = self.copyFiles(self.iteration)
-        storeParams = [self.hyperParams["batch_size"], self.hyperParams["pow"], self.hyperParams["originSampleLen"]]
+        storeParams = [self.hyperParams[0], self.hyperParams[1], self.hyperParams[2]]
+        storeIter = np.append([int(self.iteration)], np.array(storeParams))
+        copied_dir = self.copyFiles(','.join(map(str,storeIter)))
         self.avgValues.append([evalFunc(files_in_dir(copied_dir, "*.pr")[self.mb[0]:self.mb[1]],
                                         files_in_dir(self.input_dir, "*.onsets.gt")[self.mb[0]:self.mb[1]])[:2], storeParams]) 
+        logfile_name = str(copied_dir.parents._parts[-1] + ".log")
+        logfile_dir = Path.joinpath(copied_dir,logfile_name)
+        with logfile_dir.open("w+") as f:
+            f.write(f"% True Positives      CumulatError [s]  AvgTp AvgFp AvgFn  batch pow sampLen \n")
+            f.write(','.join(map(str,self.avgValues[self.iteration]))) 
         self.iteration += 1   
         
         
 onset = onsetOptimizer(r"C:\Users\brenn\iCloudDrive\College\Y2S2\Classes\0 Audio Processing\REPO\Reptile-Tornadoes\Training Data\train")
-onset.doOnsetDetection()
-onset.evaluate()
-print(onset.avgValues)
+initialSetupParams = [[0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]
+for i in range(1,len(initialSetupParams)):
+    onset.update(initialSetupParams[i])
+    onset.doOnsetDetection()
+    onset.evaluate()
     
