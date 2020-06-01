@@ -4,11 +4,11 @@ import shutil
 class onsetOptimizer:
     def __init__(self, input_dir, minibatch_size = None):
         self.input_dir = Path(os.path.abspath(input_dir))
-        self.defaultHyperParams = [4,1.24, 250]
-        self.hyperParams = [0,0,0]
+        self.defaultHyperParams = [6,1.08]
+        self.hyperParams = self.defaultHyperParams
         self.avgValues = []
         self.iteration = 0
-        self.input_dirLen = len(files_in_dir(input_dir))
+        self.input_dirLen = len(files_in_dir(self.input_dir))
         if minibatch_size is None:
             minibatch_size = [0, self.input_dirLen]
         self.mb = minibatch_size
@@ -19,10 +19,9 @@ class onsetOptimizer:
     
     def doOnsetDetection(self):
         detectOnsets(self.input_dir, self.hyperParams[0], 
-                     self.hyperParams[1], self.hyperParams[2], [self.mb[0],self.mb[1]])
+                     self.hyperParams[1], [self.mb[0],self.mb[1]])
     
     def copyFiles(self, newFolderName):
-        
         filesToCopy = files_in_dir(self.input_dir, "*.pr")
         copy_dir = Path.joinpath(self.input_dir.parent,"eval", str(newFolderName))
         if not os.path.exists(copy_dir):
@@ -32,7 +31,7 @@ class onsetOptimizer:
         return copy_dir
     
     def evaluate(self):
-        storeParams = [self.hyperParams[0], self.hyperParams[1], self.hyperParams[2]]
+        storeParams = [self.hyperParams[0], self.hyperParams[1]]
         storeIter = np.append([int(self.iteration)], np.array(storeParams))
         copied_dir = self.copyFiles(','.join(map(str,storeIter)))
         self.avgValues.append([evalFunc(files_in_dir(copied_dir, "*.pr")[self.mb[0]:self.mb[1]],
@@ -40,21 +39,16 @@ class onsetOptimizer:
         logfile_name = str(copied_dir.parents._parts[-1] + ".log")
         logfile_dir = Path.joinpath(copied_dir,logfile_name)
         with logfile_dir.open("w+") as f:
-            f.write(f"% True Positives      CumulatError [s]  AvgTp AvgFp AvgFn  batch pow sampLen \n")
+            f.write(f" F-Measure            precision           recall       batch_size  pow \n")
             f.write(','.join(map(str,self.avgValues[self.iteration]))) 
         self.iteration += 1   
         
         
-onset = onsetOptimizer(r"C:\Users\brenn\iCloudDrive\College\Y2S2\Classes\0 Audio Processing\REPO\Reptile-Tornadoes\Training Data\train")
-initialSetupParams = [[0,0,0]]
-for i in range(0,len(initialSetupParams)):
-    onset.update(initialSetupParams[i])
-    onset.doOnsetDetection()
-    onset.evaluate()
-final_log = Path.joinpath(onset.input_dir,"final.log")
-with final_log.open("w+") as f:
-    f.write(f"% True Positives      CumulatError [s]  AvgTp AvgFp AvgFn  batch pow sampLen \n")
-    for i in range(0, len(onset.avgValues)):
-        f.write(','.join(map(str,onset.avgValues[i])))
-        f.write("\n")
-        print(','.join(map(str,onset.avgValues[i])))
+onset = onsetOptimizer(r".\Training Data\extras\onsets")
+# initialSetupParams = [[0,0]]
+# for i in range(0,len(initialSetupParams)):
+#     onset.update(initialSetupParams[i])
+onset.doOnsetDetection()
+onset.evaluate()
+for i in range(0, len(onset.avgValues)):
+    print(','.join(map(str,onset.avgValues[i])))
