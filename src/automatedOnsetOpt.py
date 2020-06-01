@@ -51,4 +51,8 @@ for i in range(0,len(initialSetupParams)):
     onset.update(initialSetupParams[i])
     onset.doOnsetDetection()
     onset.evaluate()
-    
+final_log = Path.joinpath(onset.input_dir,"final.log")
+with final_log.open("w+") as f:
+    f.write(f"% True Positives      CumulatError [s]  AvgTp AvgFp AvgFn  batch pow sampLen \n")
+    for i in range(0, len(onset.avgValues)):
+        f.write(','.join(map(str,onset.avgValues[i])))
