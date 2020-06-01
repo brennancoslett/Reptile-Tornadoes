@@ -22,9 +22,9 @@ def importListFromFile(file_path: Path):
 
 def clearExcess(valueList, tolerance):
     newValueList = []
-    for i in range(1, valueList.size):
+    for i in range(1, len(valueList)):
         if valueList[i] - valueList[i-1] > tolerance:
-            newValueList[i] = valueList[i-1]
+            newValueList.append(valueList[i-1])
     return newValueList
     
 def wavToSTFT(file):
@@ -41,18 +41,22 @@ def calcFrameEnergies(file_path):
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):
                 frame_energies[k] += (abs(np.sqrt(Frame**2))) * (float((((.5*numBins)-j))) / (.5*numBins))**(-2.5)
-                # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
+        # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
         frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
         frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
         return frame_energies_norm, frameLength
 
 def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
     for i, file in enumerate(predictFilePathList):
-        evalValues = np.zeros(len(predictFilePathList))
-        prValues = clearExcess(importListFromFile(file))
+        evalValues = []
+        prValues = clearExcess(importListFromFile(file), tolerance)
         gtValues = importListFromFile(gtFilePathList[i])
         
-        tp, fp, fn, truthCursor, predictCursor = 0
+        tp = 0
+        fp = 0
+        fn = 0
+        truthCursor = 0
+        predictCursor = 0
         cumError = 0.0
         
         while(truthCursor < len(gtValues) and predictCursor < len(prValues)):
@@ -77,13 +81,18 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
         fn = fn + (len(gtValues) - truthCursor)
         fp = fp + (len(prValues) - predictCursor)   
         cumError *= 1e6
-        evalValues.append [cumError, tp, fp, fn, file.name]
+        evalValues.append([cumError, tp, fp, fn, file.name])
         
-    avgCumError,avgTp, avgFp, avgFn = 0
+    avgCumError = 0
+    avgTp = 0 
+    avgFp = 0
+    avgFn = 0
+    
     for subarray in evalValues:
        avgCumError += subarray[0]
        avgTp += subarray[1]
        avgFp += subarray[2]
        avgFn += subarray[3]
-    avgEvalValues = [avgCumError, avgTp, avgFp, avgFn] / len(evalValues)
-    return avgEvalValues, evalValues  
+    percentTrue = avgTp /(avgTp + avgFp + avgFn)
+    avgEvalValues = np.array([avgCumError,avgTp, avgFp, avgFn]) / len(evalValues)
+    return [percentTrue, avgEvalValues, evalValues]  
