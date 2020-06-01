@@ -47,7 +47,7 @@ class onsetOptimizer:
         
 onset = onsetOptimizer(r"C:\Users\brenn\iCloudDrive\College\Y2S2\Classes\0 Audio Processing\REPO\Reptile-Tornadoes\Training Data\train")
 initialSetupParams = [[0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]
-for i in range(1,len(initialSetupParams)):
+for i in range(0,len(initialSetupParams)):
     onset.update(initialSetupParams[i])
     onset.doOnsetDetection()
     onset.evaluate()
