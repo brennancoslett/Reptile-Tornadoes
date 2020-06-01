@@ -1,7 +1,7 @@
 from framework import *
 
 def onsetDetector(input_dir):
-    inputted_files = import_dir(input_dir)
+    inputted_files = files_in_dir(input_dir)
     frame_length = 0
     for file in inputted_files:
         frame_energies, frame_length = calcFrameEnergies(file)

@@ -5,12 +5,28 @@ import scipy.io.wavfile as wav
 from pathlib import Path
 from matplotlib import pyplot as plt
 
-def import_dir(input_dir):
+defaultTol = 0.1
+
+def files_in_dir(input_dir, file_type = "*.wav"):
     #pulls file paths from input directory
     input_dir = Path(os.path.abspath(input_dir))
-    inputted_files = sorted(input_dir.rglob("*.wav"))   
+    inputted_files = sorted(input_dir.rglob(file_type))   
     return inputted_files
 
+def importListFromFile(file_path: Path):
+    listFromFile = []
+    with file_path.open('r') as f:
+        for line in f:
+            listFromFile.append(float(line))
+    return listFromFile
+
+def clearExcess(valueList, tolerance):
+    newValueList = []
+    for i in range(1, valueList.size):
+        if valueList[i] - valueList[i-1] > tolerance:
+            newValueList[i] = valueList[i-1]
+    return newValueList
+    
 def wavToSTFT(file):
         fs, audio = wav.read(str(file))
         STFT = stft.spectrogram(audio)
@@ -29,3 +45,45 @@ def calcFrameEnergies(file_path):
         frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
         frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
         return frame_energies_norm, frameLength
+
+def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
+    for i, file in enumerate(predictFilePathList):
+        evalValues = np.zeros(len(predictFilePathList))
+        prValues = clearExcess(importListFromFile(file))
+        gtValues = importListFromFile(gtFilePathList[i])
+        
+        tp, fp, fn, truthCursor, predictCursor = 0
+        cumError = 0.0
+        
+        while(truthCursor < len(gtValues) and predictCursor < len(prValues)):
+            trueEvent = gtValues[truthCursor]
+            predictEvent = prValues[predictCursor]
+            error = abs(trueEvent - predictEvent)
+            
+            if error < tolerance:
+                tp += 1
+                truthCursor += 1
+                predictCursor += 1
+                cumError += error
+            elif predictEvent < trueEvent:
+                fp+= 1
+                predictCursor += 1
+            elif predictEvent > trueEvent:
+                fn += 1
+                truthCursor += 1
+            else:
+                raise RuntimeError(f"Cannot match gt {trueEvent} with prediction {predictEvent}")
+            
+        fn = fn + (len(gtValues) - truthCursor)
+        fp = fp + (len(prValues) - predictCursor)   
+        cumError *= 1e6
+        evalValues.append [cumError, tp, fp, fn, file.name]
+        
+    avgCumError,avgTp, avgFp, avgFn = 0
+    for subarray in evalValues:
+       avgCumError += subarray[0]
+       avgTp += subarray[1]
+       avgFp += subarray[2]
+       avgFn += subarray[3]
+    avgEvalValues = [avgCumError, avgTp, avgFp, avgFn] / len(evalValues)
+    return avgEvalValues, evalValues  
