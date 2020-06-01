@@ -4,7 +4,7 @@ import shutil
 class onsetOptimizer:
     def __init__(self, input_dir, minibatch_size = None):
         self.input_dir = Path(os.path.abspath(input_dir))
-        self.defaultHyperParams = [7,0.99, 150]
+        self.defaultHyperParams = [4,1.24, 250]
         self.hyperParams = [0,0,0]
         self.avgValues = []
         self.iteration = 0
@@ -46,7 +46,7 @@ class onsetOptimizer:
         
         
 onset = onsetOptimizer(r"C:\Users\brenn\iCloudDrive\College\Y2S2\Classes\0 Audio Processing\REPO\Reptile-Tornadoes\Training Data\train")
-initialSetupParams = [[0,0,0],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]
+initialSetupParams = [[0,0,0]]
 for i in range(0,len(initialSetupParams)):
     onset.update(initialSetupParams[i])
     onset.doOnsetDetection()
@@ -56,3 +56,5 @@ with final_log.open("w+") as f:
     f.write(f"% True Positives      CumulatError [s]  AvgTp AvgFp AvgFn  batch pow sampLen \n")
     for i in range(0, len(onset.avgValues)):
         f.write(','.join(map(str,onset.avgValues[i])))
+        f.write("\n")
+        print(','.join(map(str,onset.avgValues[i])))

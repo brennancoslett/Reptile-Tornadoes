@@ -29,7 +29,7 @@ def clearExcess(valueList, tolerance):
     
 def wavToSTFT(file):
         fs, audio = wav.read(str(file))
-        STFT = stft.spectrogram(audio)
+        STFT = stft.spectrogram(audio, padding = 4)
         frameLength = (audio.size/fs)/STFT.shape[1]
         return STFT, frameLength
     
