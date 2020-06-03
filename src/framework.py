@@ -8,11 +8,20 @@ from matplotlib import pyplot as plt
 defaultTol = 0.1
 
 def files_in_dir(input_dir, file_type = "*.wav"):
+    '''
+    iterates through a directory and creates a list of pathlib Paths\n
+    file_type: defaults to ".wav", can be changed to any str\n
+    inputted_files: list of all files in directory with type file_type\n
+    return inputted_files
+    '''
     input_dir = Path(os.path.abspath(input_dir))
     inputted_files = sorted(input_dir.rglob(file_type))   
     return inputted_files
 
 def importListFromFile(file_path: Path):
+    '''
+    iterates through all lines in file to create a list of values
+    '''
     listFromFile = []
     with file_path.open('r') as f:
         for line in f:
@@ -20,32 +29,58 @@ def importListFromFile(file_path: Path):
     return listFromFile
 
 def clearExcess(valueList, tolerance):
+    '''
+    removes all values in valueList that are within tolerance.
+    '''
     newValueList = []
     for i in range(1, len(valueList)):
         if valueList[i] - valueList[i-1] > tolerance:
             newValueList.append(valueList[i-1])
     return newValueList
     
-def wavToSTFT(file):
+def wavToSTFT(file: Path):
+    '''
+    converts .wav file to STFT\n
+    file: pathlib Path to wav file\n
+    return STFT, frameLength
+    '''
     fs, audio = wav.read(str(file))
     STFT = stft.spectrogram(audio)
     frameLength = (audio.size/fs)/STFT.shape[1]
     return STFT, frameLength
     
-def calcFrameEnergies(file_path):
+def calcFrameEnergies(file_path: Path, weightForHFC = false):
+    '''
+    calcFrameEnergies takes path to a .wav file, calculates the STFT
+    and creates an array frame_energies[] with the cumulative energy at each frame in the STFT.\n
+    @weightForHFC: defaults to False, \nwhen enabled weights the energy in each bin with High Frequency Content given highest weight\n
+    return: frameEnergiesNorm, frameLength 
+    '''
     file_stft, frameLength = wavToSTFT(file_path)
     numFrames = file_stft.shape[1]
     numBins = file_stft.shape[0]
     frame_energies = np.zeros(numFrames, dtype='complex128')
-    for j, Bin in enumerate(file_stft):
-        for k, Frame in enumerate(Bin):
-            frame_energies[k] += np.sqrt(abs(Frame))* (j/numBins)
+    if weightForHFC:
+        for j, Bin in enumerate(file_stft):
+            for k, Frame in enumerate(Bin):
+                frame_energies[k] += abs(np.sqrt(Frame*2)) * (j/numBins)
+    else:
+        for j, Bin in enumerate(file_stft):
+            for k, Frame in enumerate(Bin):
+                frame_energies[k] += abs(np.sqrt(Frame*2))
     # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
-    frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
-    frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
-    return frame_energies_norm, frameLength
+    frameEnergiesNorm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
+    frameEnergiesNorm = (frameEnergiesNorm/np.abs(frame_energies).max()).real
+    return frameEnergiesNorm, frameLength
 
 def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
+    '''
+    takes filePath lists for predictions and groundtruths and evaluates the num of TruePositives, FalsePositives, and FalseNegatives.\n
+    F_measure: calculated F Measure over entire evaluated set\n
+    P_R_return: values for Precision and Recall used to calc F_measure\n
+    evalValues: [cumError, tp, fp, fn, file.name]\n
+    return: [F_measure, P_R_return, evalValues]  
+    '''
     for i, file in enumerate(predictFilePathList):
         evalValues = []
         prValues = clearExcess(importListFromFile(file), tolerance)

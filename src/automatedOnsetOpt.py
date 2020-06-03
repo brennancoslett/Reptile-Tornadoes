@@ -42,13 +42,13 @@ class onsetOptimizer:
             f.write(f" F-Measure            precision           recall       batch_size  pow \n")
             f.write(','.join(map(str,self.avgValues[self.iteration]))) 
         self.iteration += 1   
+    
+    def logPrintAvgVals(self):
+        for i in range(0, len(self.avgValues)):
+            print(','.join(map(str,self.avgValues[i])))
         
-        
-onset = onsetOptimizer(r".\Training Data\train")
-# initialSetupParams = [[0,0]]
-# for i in range(0,len(initialSetupParams)):
-#     onset.update(initialSetupParams[i])
+defaultInput_path = r".\Training Data\extras\onsets"
+onset = onsetOptimizer(defaultInput_path)
 onset.doOnsetDetection()
 onset.evaluate()
-for i in range(0, len(onset.avgValues)):
-    print(','.join(map(str,onset.avgValues[i])))
+onset.logPrintAvgVals()
