@@ -49,7 +49,7 @@ def wavToSTFT(file: Path):
     frameLength = (audio.size/fs)/STFT.shape[1]
     return STFT, frameLength
     
-def calcFrameEnergies(file_path: Path, weightForHFC = false):
+def calcFrameEnergies(file_path: Path, weightForHFC = False):
     '''
     calcFrameEnergies takes path to a .wav file, calculates the STFT
     and creates an array frame_energies[] with the cumulative energy at each frame in the STFT.\n
@@ -76,18 +76,18 @@ def calcFrameEnergies(file_path: Path, weightForHFC = false):
 def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
     '''
     takes filePath lists for predictions and groundtruths and evaluates the num of TruePositives, FalsePositives, and FalseNegatives.\n
+    return: [F_measure, P_R_return, evalValues]\n
     F_measure: calculated F Measure over entire evaluated set\n
     P_R_return: values for Precision and Recall used to calc F_measure\n
-    evalValues: [cumError, tp, fp, fn, file.name]\n
-    return: [F_measure, P_R_return, evalValues]  
+    evalValues: [cumError, tp, fp, fn, file.name]
     '''
     for i, file in enumerate(predictFilePathList):
         evalValues = []
         prValues = clearExcess(importListFromFile(file), tolerance)
         gtValues = importListFromFile(gtFilePathList[i])
         
-        tp = 0
-        fp = 0
+        tp = 0 
+        fp = 0 
         fn = 0 
         truthCursor = 0
         predictCursor = 0
@@ -116,8 +116,8 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
         fp = fp + (len(prValues) - predictCursor)   
         evalValues.append([cumError, tp, fp, fn, file.name])
     
-    avgCumError = 0
-    avgTp =0
+    avgCumError = 0 
+    avgTp = 0
     avgFp = 0 
     avgFn = 0    
     for subarray in evalValues:
