@@ -4,15 +4,15 @@ from tqdm import tqdm
 
 class musicAnalzyer:
     
-    def __init__(self, input_dir = r".\Training Data\train", minibatch_size = None):
+    def __init__(self, input_dir = r".\Training Data\train", onsetParams = {"batch_size":6,
+                            "pow": 1.08},  minibatch_size = None):
         '''
         minibatch_size: [pos 1st file, pos last file - 1] in the input_dir\n
         useful when one does not wish to iterate over entire input_dir
         '''
         self.input_dir = Path(os.path.abspath(input_dir))
         # batch_size, pow
-        self.onsetParams = {"batch_size":6,
-                            "pow": 1.08} 
+        self.onsetParams = onsetParams
         self.evalValues = []
         self.input_dirLen = len(files_in_dir(self.input_dir))
         if minibatch_size is None:
@@ -24,7 +24,7 @@ class musicAnalzyer:
         frame_length = 0
         for i, file in tqdm(enumerate(inputted_files), desc="Detecting Onsets",
                         total=len(inputted_files)):
-            frame_energies, frame_length = calcFrameEnergies(file)
+            frame_energies, frame_length = calcFrameEnergies(file, True)
             # calculate peaks
             filePeaks = []
             for value in range(self.onsetParams["batch_size"], frame_energies.size, self.onsetParams["batch_size"]):
@@ -81,7 +81,7 @@ class musicAnalzyer:
         for i in range(0, len(self.evalValues)):
             print(','.join(map(str,self.evalValues[i])))
 
-    def evaluate(self, evalType):
+    def evaluate(self, evalType = "onsets"):
         allEvalType = '*.' + evalType
         storeParams = [self.onsetParams['batch_size'], self.onsetParams['pow'], evalType.capitalize()]
         copied_dir = self.copyFiles(','.join(map(str,storeParams)))
@@ -94,9 +94,18 @@ class musicAnalzyer:
             f.write(','.join(map(str,self.evalValues[0])))
         self.printEvalValues()
 
-mA = musicAnalzyer()
-mA.detectOnsets()
-mA.evaluate("onsets")
-# mA2 = musicAnalzyer(r'.\Training Data\extras\onsets')
+# mA = musicAnalzyer()
+# mA.detectOnsets()
+# mA.evaluate()
+# mA2 = musicAnalzyer(input_dir = r'.\Training Data\extras\onsets')
 # mA2.detectOnsets()
 # mA2.evaluate()
+
+mA = musicAnalzyer(onsetParams = {"batch_size":5,
+                            "pow": 1.08})
+mA.detectOnsets()
+mA.evaluate()
+mA2 = musicAnalzyer(input_dir = r'.\Training Data\extras\onsets', onsetParams = {"batch_size":5,
+                            "pow": 1.08})
+mA2.detectOnsets()
+mA2.evaluate()

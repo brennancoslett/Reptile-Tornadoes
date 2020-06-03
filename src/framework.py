@@ -45,7 +45,7 @@ def wavToSTFT(file: Path):
     return STFT, frameLength
     '''
     fs, audio = wav.read(str(file))
-    STFT = stft.spectrogram(audio)
+    STFT = stft.spectrogram(audio, hopsize= 512, padding= 2)
     frameLength = (audio.size/fs)/STFT.shape[1]
     return STFT, frameLength
     
@@ -63,7 +63,7 @@ def calcFrameEnergies(file_path: Path, weightForHFC = False):
     if weightForHFC:
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):
-                frame_energies[k] += abs(np.sqrt(Frame*2)) * (j/numBins)
+                frame_energies[k] += abs(np.sqrt(Frame*2)) * (1.5*j/numBins) * ((np.exp(j/numBins)-1)/(np.exp(1)-1))
     else:
         for j, Bin in enumerate(file_stft):
             for k, Frame in enumerate(Bin):
