@@ -5,7 +5,7 @@ import scipy.io.wavfile as wav
 from pathlib import Path
 from matplotlib import pyplot as plt
 
-defaultTol = 0.1
+defaultTol = 0.05
 
 def files_in_dir(input_dir, file_type = "*.wav"):
     '''
@@ -33,10 +33,19 @@ def clearExcess(valueList, tolerance):
     removes all values in valueList that are within tolerance.
     '''
     newValueList = []
+    valueListLen = len(valueList)
     for i in range(1, len(valueList)):
         if valueList[i] - valueList[i-1] > tolerance:
             newValueList.append(valueList[i-1])
+        else:
+            newValueList = newValueList[:-1]
+            newValueList.append((valueList[i] + valueList[i-1])/2)
     return newValueList
+
+def plotSTFT(frame_energies, file):
+    plt.plot(frame_energies)
+    plt.title(f'{file.name} Frames: {frame_energies.size}')
+    plt.show()
     
 def wavToSTFT(file: Path):
     '''
@@ -45,7 +54,7 @@ def wavToSTFT(file: Path):
     return STFT, frameLength
     '''
     fs, audio = wav.read(str(file))
-    STFT = stft.spectrogram(audio, hopsize= 512, padding= 2)
+    STFT = stft.spectrogram(audio,framelength=2048, hopsize= 1024)
     frameLength = (audio.size/fs)/STFT.shape[1]
     return STFT, frameLength
     
@@ -60,18 +69,13 @@ def calcFrameEnergies(file_path: Path, weightForHFC = False):
     numFrames = file_stft.shape[1]
     numBins = file_stft.shape[0]
     frame_energies = np.zeros(numFrames, dtype='complex128')
-    if weightForHFC:
-        for j, Bin in enumerate(file_stft):
-            for k, Frame in enumerate(Bin):
-                frame_energies[k] += abs(np.sqrt(Frame*2)) * (1.5*j/numBins) * ((np.exp(j/numBins)-1)/(np.exp(1)-1))
-    else:
-        for j, Bin in enumerate(file_stft):
-            for k, Frame in enumerate(Bin):
-                frame_energies[k] += abs(np.sqrt(Frame*2))
-    # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
-    frameEnergiesNorm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
-    frameEnergiesNorm = (frameEnergiesNorm/np.abs(frame_energies).max()).real
-    return frameEnergiesNorm, frameLength
+    for j, Bin in enumerate(file_stft):
+        for k, Frame in enumerate(Bin):
+            if weightForHFC:
+                frame_energies[k] += ((Frame + abs(Frame))/2)* (j/numBins)
+            else:
+                frame_energies[k] += ((Frame + abs(Frame))/2)
+    return frame_energies, frameLength
 
 def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
     '''
@@ -85,6 +89,9 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
         evalValues = []
         prValues = clearExcess(importListFromFile(file), tolerance)
         gtValues = importListFromFile(gtFilePathList[i])
+        
+        if prValues is None or gtValues is None:
+            raise ValueError("prValues or gtValues is empty")
         
         tp = 0 
         fp = 0 

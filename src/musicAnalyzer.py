@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 class musicAnalzyer:
     
-    def __init__(self, input_dir = r".\Training Data\train", onsetParams = {"batch_size":6,
+    def __init__(self, input_dir = r".\Training Data\train", onsetParams = {"batch_size":5,
                             "pow": 1.08},  minibatch_size = None):
         '''
         minibatch_size: [pos 1st file, pos last file - 1] in the input_dir\n
@@ -19,29 +19,38 @@ class musicAnalzyer:
             minibatch_size = [0, self.input_dirLen]
         self.mb = minibatch_size
     
-    def detectOnsets(self):
+    def detectOnsets(self, plot = False, power = False, HFC = False):
         inputted_files = files_in_dir(self.input_dir)[self.mb[0]:self.mb[1]]
         frame_length = 0
+        
         for i, file in tqdm(enumerate(inputted_files), desc="Detecting Onsets",
                         total=len(inputted_files)):
-            frame_energies, frame_length = calcFrameEnergies(file, True)
-            # calculate peaks
-            filePeaks = []
-            for value in range(self.onsetParams["batch_size"], frame_energies.size, self.onsetParams["batch_size"]):
-                file_pp_min =  (frame_energies[value-self.onsetParams["batch_size"]:value].mean() ** self.onsetParams["pow"])
-                localMax = np.argmax(frame_energies[value - self.onsetParams["batch_size"]:value])
-                try:
-                    if (frame_energies[localMax + value] > file_pp_min):
-                        if np.isin(localMax+ value, filePeaks, invert=True):    
-                            filePeaks.append(localMax + value)
-                except:
-                    pass
+            
+            frame_energies, frame_length = calcFrameEnergies(file, HFC)
+            
+            if plot:
+                plotSTFT(frame_energies, file)
                 
-            #log to file
-            logfile = Path.joinpath(Path(self.input_dir),file.stem + ".onsets.pr")
-            with logfile.open("w+") as f:
-                for peak in filePeaks:
-                    f.write(f'{(peak * frame_length):0.9f}\n')
+            filePeaks = []
+            batch_size = self.onsetParams["batch_size"]
+            
+            if HFC:
+                for value in range(batch_size, frame_energies.size, batch_size):
+                    file_pp_min =  ((frame_energies[value-batch_size:value + batch_size].mean() * self.onsetParams["pow"]))
+                    for subVal in range(0, batch_size):
+                        subPosition = subVal + (value- batch_size)
+                        if (frame_energies[subPosition] > file_pp_min):  
+                            filePeaks.append(subPosition)
+            else:
+                pass
+                        
+            self.logToFile(file, filePeaks, frame_length)
+
+    def logToFile(self, file, filePeaks, frame_length):
+        logfile = Path.joinpath(Path(self.input_dir),file.stem + ".onsets.pr")
+        with logfile.open("w+") as f:
+            for peak in filePeaks:
+                f.write(f'{(peak * frame_length):0.9f}\n')
     
     def detectBeats(self):
         '''
@@ -94,18 +103,6 @@ class musicAnalzyer:
             f.write(','.join(map(str,self.evalValues[0])))
         self.printEvalValues()
 
-# mA = musicAnalzyer()
-# mA.detectOnsets()
-# mA.evaluate()
-# mA2 = musicAnalzyer(input_dir = r'.\Training Data\extras\onsets')
-# mA2.detectOnsets()
-# mA2.evaluate()
-
-mA = musicAnalzyer(onsetParams = {"batch_size":5,
-                            "pow": 1.08})
+mA = musicAnalzyer()
 mA.detectOnsets()
 mA.evaluate()
-mA2 = musicAnalzyer(input_dir = r'.\Training Data\extras\onsets', onsetParams = {"batch_size":5,
-                            "pow": 1.08})
-mA2.detectOnsets()
-mA2.evaluate()
