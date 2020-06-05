@@ -44,7 +44,7 @@ class onsetOptimizer:
         self.iteration += 1   
         
         
-onset = onsetOptimizer(r".\Training Data\extras\onsets")
+onset = onsetOptimizer(r".\Training Data\train")
 # initialSetupParams = [[0,0]]
 # for i in range(0,len(initialSetupParams)):
 #     onset.update(initialSetupParams[i])

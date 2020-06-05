@@ -39,7 +39,7 @@ def calcFrameEnergies(file_path):
     frame_energies = np.zeros(numFrames, dtype='complex128')
     for j, Bin in enumerate(file_stft):
         for k, Frame in enumerate(Bin):
-            frame_energies[k] += abs(np.sqrt(Frame*2)) * (j/numBins)
+            frame_energies[k] += np.sqrt(abs(Frame))* (j/numBins)
     # https://stackoverflow.com/questions/41576536/normalizing-complex-values-in-numpy-python
     frame_energies_norm = frame_energies - frame_energies.real.min() - 1j*frame_energies.imag.min() 
     frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
@@ -51,7 +51,11 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
         prValues = clearExcess(importListFromFile(file), tolerance)
         gtValues = importListFromFile(gtFilePathList[i])
         
-        tp, fp, fn, truthCursor, predictCursor = 0
+        tp = 0
+        fp = 0
+        fn = 0 
+        truthCursor = 0
+        predictCursor = 0
         cumError = 0.0
         
         while(truthCursor < len(gtValues) and predictCursor < len(prValues)):
@@ -77,7 +81,10 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = defaultTol):
         fp = fp + (len(prValues) - predictCursor)   
         evalValues.append([cumError, tp, fp, fn, file.name])
     
-    avgCumError, avgTp, avgFp, avgFn = 0    
+    avgCumError = 0
+    avgTp =0
+    avgFp = 0 
+    avgFn = 0    
     for subarray in evalValues:
        avgCumError += subarray[0]
        avgTp += subarray[1]

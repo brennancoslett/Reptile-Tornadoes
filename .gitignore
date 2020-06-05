@@ -16,3 +16,4 @@ Examples/JavaFramework/target/test-classes/at/jku/cp/spezi/TestEval.class
 *.pr
 *.pyc
 Training Data/extras/onsets
+Training Data/eval/0.0,5.0,1.08/0.0,5.0,1.08.log
