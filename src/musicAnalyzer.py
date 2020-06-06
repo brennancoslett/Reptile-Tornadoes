@@ -4,17 +4,19 @@ from tqdm import tqdm
 
 class musicAnalzyer:
     
-    def __init__(self, input_dir = r".\Training Data\train", subsetPositions = None, HFC = False):
+    def __init__(self, input_dir = r".\Training Data\train", subsetPositions = None, HFC = False, plot = False):
         '''
         input_dir = str path to directory containing .wav files and .gt files\n
         subsetPositions: indexes of subset of files in input_dir over which to iterate\n
-        HFC: if true -> calcFrameOnsets weights bins for High Frequency Content
+        HFC: if true -> calcFrameOnsets weights bins for High Frequency Content\n
+        plot: if true will plot calc amplitude vs frame graph for each .wav file
         
         '''
         self.input_dir = Path(os.path.abspath(input_dir))
         self.onsetParams = {"batch_size":6,
-                            "pow": 1.08},
+                            "pow": 1.08}
         self.HFC = HFC
+        self.plot = plot
         self.evalValues = []
         self.input_dirLen = len(files_in_dir(self.input_dir))
         self.batchMult = 1
@@ -22,7 +24,8 @@ class musicAnalzyer:
             subsetPositions = [0, self.input_dirLen]
         self.mb = subsetPositions
     
-    def detectOnsets(self, plot = False, power = False):
+    def detectOnsets(self):
+        print("Detecting Onsets..")
         HFC = self.HFC
         inputted_files = files_in_dir(self.input_dir)[self.mb[0]:self.mb[1]]
         frame_length = 0
@@ -32,7 +35,7 @@ class musicAnalzyer:
             
             frame_energies, frame_length = calcFrameEnergies(file, HFC)
             
-            if plot:
+            if self.plot:
                 plotSTFT(frame_energies, file)
                 
             filePeaks = []
@@ -60,7 +63,21 @@ class musicAnalzyer:
         To be implimented
         '''
         pass
-                        
+    
+    def analyze(self, output = False):
+        '''
+        Evaluates given input directory for onsets, beats, and tempo
+        output: if true -> will evaluate all three for F-measures
+        '''
+        print("Analyzing Directory")
+        self.detectOnsets()
+        self.detectBeats()
+        self.extractTempo()
+        if output:
+                print("Evaluating predictions")
+                self.evaluate("onsets")
+                self.evaluate("beats")
+                self.evaluate("tempo")                       
     def copyFiles(self, newFolderName = None):
         '''
         Copies files from input_dir to new directory.\n
@@ -87,7 +104,8 @@ class musicAnalzyer:
         storeParams = [self.onsetParams['batch_size'], self.onsetParams['pow'], evalType.capitalize()]
         copied_dir = self.copyFiles(','.join(map(str,storeParams)))
         self.evalValues.append([evalFunc(files_in_dir(copied_dir, (allEvalType + ".pr"))[self.mb[0]:self.mb[1]],
-                                        files_in_dir(self.input_dir, (allEvalType + ".gt"))[self.mb[0]:self.mb[1]])[:2], storeParams]) 
+                                        files_in_dir(self.input_dir, (allEvalType + ".gt"), evalType)[self.mb[0]:self.mb[1]])[:2],
+                                         storeParams]) 
         logfile_name = str(copied_dir.parents._parts[-1] + ".log")
         logfile_dir = Path.joinpath(copied_dir,logfile_name)
         with logfile_dir.open("w+") as f:
@@ -102,3 +120,4 @@ class musicAnalzyer:
         print(f" F-Measure            precision           recall       batch_size  pow     EvalType")
         for i in range(0, len(self.evalValues)):
             print(','.join(map(str,self.evalValues[i])))
+            

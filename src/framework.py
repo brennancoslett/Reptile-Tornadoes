@@ -84,7 +84,7 @@ def calcFrameEnergies(file_path: Path, weightForHFC = False):
     frame_energies_norm = (frame_energies_norm/np.abs(frame_energies).max()).real
     return frame_energies_norm, frameLength
 
-def evalFunc(predictFilePathList, gtFilePathList, tolerance = 0.05):
+def evalFunc(predictFilePathList, gtFilePathList, evalType):
     '''
     ported from JavaFramework\n
     takes filePath lists for predictions and groundtruths and evaluates the num of TruePositives, FalsePositives, and FalseNegatives.\n
@@ -93,62 +93,67 @@ def evalFunc(predictFilePathList, gtFilePathList, tolerance = 0.05):
     P_R_return: values for Precision and Recall used to calc F_measure\n
     evalValues: [cumError, tp, fp, fn, file.name]
     '''
-    for i, file in enumerate(predictFilePathList):
-        evalValues = []
-        prValues = clearExcess(importListFromFile(file))
-        gtValues = importListFromFile(gtFilePathList[i])
-        
-        if prValues is None or gtValues is None:
-            raise ValueError("prValues or gtValues is empty")
-        
-        tp = 0 
-        fp = 0 
-        fn = 0 
-        truthCursor = 0
-        predictCursor = 0
-        cumError = 0.0
-        
-        while(truthCursor < len(gtValues) and predictCursor < len(prValues)):
-            trueEvent = gtValues[truthCursor]
-            predictEvent = prValues[predictCursor]
-            error = abs(trueEvent - predictEvent)
+    tolerance = 0.05
+    if evalType == "tempo":
+        pass
+        print("needs to be ported from JavaFramwork. EvalTempo may need to be a new function")
+    else:
+        for i, file in enumerate(predictFilePathList):
+            evalValues = []
+            prValues = clearExcess(importListFromFile(file))
+            gtValues = importListFromFile(gtFilePathList[i])
             
-            if error < tolerance:
-                tp += 1
-                truthCursor += 1
-                predictCursor += 1
-                cumError += error
-            elif predictEvent < trueEvent:
-                fp+= 1
-                predictCursor += 1
-            elif predictEvent > trueEvent:
-                fn += 1
-                truthCursor += 1
-            else:
-                raise RuntimeError(f"Cannot match gt {trueEvent} with prediction {predictEvent}")
+            if prValues is None or gtValues is None:
+                raise ValueError("prValues or gtValues is empty")
             
-        fn = fn + (len(gtValues) - truthCursor)
-        fp = fp + (len(prValues) - predictCursor)   
-        evalValues.append([cumError, tp, fp, fn, file.name])
-    
-    avgCumError = 0 
-    avgTp = 0
-    avgFp = 0 
-    avgFn = 0    
-    for subarray in evalValues:
-       avgCumError += subarray[0]
-       avgTp += subarray[1]
-       avgFp += subarray[2]
-       avgFn += subarray[3]
-       
-    precision = avgTp/(avgTp + avgFp)
-    recall = avgTp/(avgTp + avgFn)
-    F_measure = 2*((precision* recall)/(precision + recall))
-    
-    avgCumError /= len(evalValues)
-    avgTp /= len(evalValues)
-    avgFp /= len(evalValues)
-    avgFn /= len(evalValues)
-    
-    P_R_return = [precision, recall]
-    return [F_measure, P_R_return, evalValues]  
+            tp = 0 
+            fp = 0 
+            fn = 0 
+            truthCursor = 0
+            predictCursor = 0
+            cumError = 0.0
+            
+            while(truthCursor < len(gtValues) and predictCursor < len(prValues)):
+                trueEvent = gtValues[truthCursor]
+                predictEvent = prValues[predictCursor]
+                error = abs(trueEvent - predictEvent)
+                
+                if error < tolerance:
+                    tp += 1
+                    truthCursor += 1
+                    predictCursor += 1
+                    cumError += error
+                elif predictEvent < trueEvent:
+                    fp+= 1
+                    predictCursor += 1
+                elif predictEvent > trueEvent:
+                    fn += 1
+                    truthCursor += 1
+                else:
+                    raise RuntimeError(f"Cannot match gt {trueEvent} with prediction {predictEvent}")
+                
+            fn = fn + (len(gtValues) - truthCursor)
+            fp = fp + (len(prValues) - predictCursor)   
+            evalValues.append([cumError, tp, fp, fn, file.name])
+        
+        avgCumError = 0 
+        avgTp = 0
+        avgFp = 0 
+        avgFn = 0    
+        for subarray in evalValues:
+            avgCumError += subarray[0]
+            avgTp += subarray[1]
+            avgFp += subarray[2]
+            avgFn += subarray[3]
+            
+        precision = avgTp/(avgTp + avgFp)
+        recall = avgTp/(avgTp + avgFn)
+        F_measure = 2*((precision* recall)/(precision + recall))
+        
+        avgCumError /= len(evalValues)
+        avgTp /= len(evalValues)
+        avgFp /= len(evalValues)
+        avgFn /= len(evalValues)
+        
+        P_R_return = [precision, recall]
+        return [F_measure, P_R_return, evalValues]  
