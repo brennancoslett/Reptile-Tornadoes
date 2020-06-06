@@ -4,22 +4,23 @@ from tqdm import tqdm
 
 class musicAnalzyer:
     
-    def __init__(self, input_dir = r".\Training Data\train", onsetParams = {"batch_size":6,
-                            "pow": 1.08},  minibatch_size = None, HFC = False):
+    def __init__(self, input_dir = r".\Training Data\train", subsetPositions = None, HFC = False):
         '''
-        minibatch_size: [pos 1st file, pos last file - 1] in the input_dir\n
-        useful when one does not wish to iterate over entire input_dir
+        input_dir = str path to directory containing .wav files and .gt files\n
+        subsetPositions: indexes of subset of files in input_dir over which to iterate\n
+        HFC: if true -> calcFrameOnsets weights bins for High Frequency Content
+        
         '''
         self.input_dir = Path(os.path.abspath(input_dir))
-        # batch_size, pow
-        self.onsetParams = onsetParams
+        self.onsetParams = {"batch_size":6,
+                            "pow": 1.08},
         self.HFC = HFC
         self.evalValues = []
         self.input_dirLen = len(files_in_dir(self.input_dir))
         self.batchMult = 1
-        if minibatch_size is None:
-            minibatch_size = [0, self.input_dirLen]
-        self.mb = minibatch_size
+        if subsetPositions is None:
+            subsetPositions = [0, self.input_dirLen]
+        self.mb = subsetPositions
     
     def detectOnsets(self, plot = False, power = False):
         HFC = self.HFC
@@ -36,21 +37,17 @@ class musicAnalzyer:
                 
             filePeaks = []
             batch_size = self.onsetParams["batch_size"]
-            
-            for value in range(batch_size*self.batchMult, frame_energies.size, batch_size*self.batchMult):
-                file_pp_min =  ((frame_energies[value-batch_size*self.batchMult:value + batch_size*self.batchMult].mean() * self.onsetParams["pow"]))
-                for subBatch in reversed(range(1, self.batchMult+1)):
-                    for subVal in range(0, batch_size):
-                        if (frame_energies[(subVal*subBatch) + (value- (batch_size* subBatch))] > file_pp_min):  
-                            filePeaks.append((subVal) + (value- (batch_size* subBatch)))
-                        
-            self.logToFile(file, filePeaks, frame_length)
+            for value in range(batch_size, frame_energies.size, batch_size):
+                file_pp_min =  ((frame_energies[value-batch_size:value + batch_size].mean() * self.onsetParams["pow"]))
+                for subVal in range(0, batch_size):
+                    if (frame_energies[subVal + (value- batch_size)] > file_pp_min):  
+                        filePeaks.append(subVal + (value- batch_size))
+                            
+            logfile = Path.joinpath(Path(self.input_dir),file.stem + ".onsets.pr")
+            with logfile.open("w+") as f:
+                for peak in filePeaks:
+                    f.write(f'{(peak * frame_length):0.9f}\n')
 
-    def logToFile(self, file, filePeaks, frame_length):
-        logfile = Path.joinpath(Path(self.input_dir),file.stem + ".onsets.pr")
-        with logfile.open("w+") as f:
-            for peak in filePeaks:
-                f.write(f'{(peak * frame_length):0.9f}\n')
     
     def detectBeats(self):
         '''
@@ -82,15 +79,10 @@ class musicAnalzyer:
             os.remove(str(file))
         return copy_dir
 
-    def printEvalValues(self):
-        '''
-        prints formatted versions of all data stored in self.evalValues
-        '''
-        print(f" F-Measure            precision           recall       batch_size  pow     EvalType")
-        for i in range(0, len(self.evalValues)):
-            print(','.join(map(str,self.evalValues[i])))
-
     def evaluate(self, evalType = "onsets"):
+        '''
+        Run eval on evalType and create log file
+        '''
         allEvalType = '*.' + evalType
         storeParams = [self.onsetParams['batch_size'], self.onsetParams['pow'], evalType.capitalize()]
         copied_dir = self.copyFiles(','.join(map(str,storeParams)))
@@ -103,10 +95,10 @@ class musicAnalzyer:
             f.write(','.join(map(str,self.evalValues[0])))
         self.printEvalValues()
 
-mA = musicAnalzyer(input_dir= r'.\Training Data\extras\onsets',HFC = True)
-mA.detectOnsets()
-mA.evaluate()
-
-mA2 = musicAnalzyer(input_dir= r'.\Training Data\extras\onsets',HFC = False)
-mA2.detectOnsets()
-mA2.evaluate()
+    def printEvalValues(self):
+        '''
+        prints formatted versions of all data stored in self.evalValues
+        '''
+        print(f" F-Measure            precision           recall       batch_size  pow     EvalType")
+        for i in range(0, len(self.evalValues)):
+            print(','.join(map(str,self.evalValues[i])))

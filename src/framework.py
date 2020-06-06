@@ -31,7 +31,7 @@ def importListFromFile(file_path: Path):
 
 def clearExcess(valueList):
     '''
-    removes all values in valueList that are within tolerance.
+    removes all values in valueList that are within tolerance (0.05sec).
     '''
     newValueList = []
     for i in range(1, len(valueList)):
@@ -62,7 +62,7 @@ def calcFrameEnergies(file_path: Path, weightForHFC = False):
     '''
     calcFrameEnergies takes path to a .wav file, calculates the STFT
     and creates an array frame_energies[] with the cumulative energy at each frame in the STFT.\n
-    @weightForHFC: defaults to False, \nwhen enabled weights the energy in each bin with High Frequency Content given highest weight\n
+    weightForHFC: defaults to False, \nwhen enabled weights the energy in each bin with High Frequency Content given highest weight\n
     return: frameEnergiesNorm, frameLength 
     '''
     file_stft, frameLength = wavToSTFT(file_path)
@@ -86,6 +86,7 @@ def calcFrameEnergies(file_path: Path, weightForHFC = False):
 
 def evalFunc(predictFilePathList, gtFilePathList, tolerance = 0.05):
     '''
+    ported from JavaFramework\n
     takes filePath lists for predictions and groundtruths and evaluates the num of TruePositives, FalsePositives, and FalseNegatives.\n
     return: [F_measure, P_R_return, evalValues]\n
     F_measure: calculated F Measure over entire evaluated set\n
