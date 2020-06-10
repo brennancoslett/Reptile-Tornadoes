@@ -5,7 +5,6 @@ import scipy.io.wavfile as wav
 from pathlib import Path
 from matplotlib import pyplot as plt
 
-defaultTol = 0.15
 defaultHop = 1024
 
 def files_in_dir(input_dir, file_type = "*.wav"):
