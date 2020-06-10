@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 class musicAnalzyer:
     
-    def __init__(self, input_dir = r".\Training Data\train", subsetPositions = None, HFC = False, plot = False):
+    def __init__(self, input_dir = r".\Training Data\train", subsetPositions = None, HFC = True, plot = False):
         '''
         input_dir = str path to directory containing .wav files and .gt files\n
         subsetPositions: indexes of subset of files in input_dir over which to iterate\n
@@ -30,8 +30,7 @@ class musicAnalzyer:
         inputted_files = files_in_dir(self.input_dir)[self.mb[0]:self.mb[1]]
         frame_length = 0
         
-        for i, file in tqdm(enumerate(inputted_files), desc="Detecting Onsets",
-                        total=len(inputted_files)):
+        for i, file in tqdm(enumerate(inputted_files),total=len(inputted_files)):
             
             frame_energies, frame_length = calcFrameEnergies(file, HFC)
             
@@ -104,7 +103,7 @@ class musicAnalzyer:
         storeParams = [self.onsetParams['batch_size'], self.onsetParams['pow'], evalType.capitalize()]
         copied_dir = self.copyFiles(','.join(map(str,storeParams)))
         self.evalValues.append([evalFunc(files_in_dir(copied_dir, (allEvalType + ".pr"))[self.mb[0]:self.mb[1]],
-                                        files_in_dir(self.input_dir, (allEvalType + ".gt"), evalType)[self.mb[0]:self.mb[1]])[:2],
+                                        files_in_dir(self.input_dir, (allEvalType + ".gt"))[self.mb[0]:self.mb[1]], evalType)[:2],
                                          storeParams]) 
         logfile_name = str(copied_dir.parents._parts[-1] + ".log")
         logfile_dir = Path.joinpath(copied_dir,logfile_name)
@@ -121,3 +120,6 @@ class musicAnalzyer:
         for i in range(0, len(self.evalValues)):
             print(','.join(map(str,self.evalValues[i])))
             
+
+mA = musicAnalzyer()
+mA.analyze()
