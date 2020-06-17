@@ -1,0 +1,13 @@
+the test.py was my attempt to to figure out the Tempo. on the np.correlate i was looking into that and following advice on using it.
+some said to use mode = "full" and some said to use mode "same", i went for "same" cause some adviced that full gets covariances for
+extreme shifts, 1 array element overlaps seld, and based my code around it and some guidence from Durbin-Watson statistic which was
+suggested as a refference.
+
+
+
+for that formula that i mentioned, Tempo = F*60/lag, i was mistaken it was Tempo = Fs * 60 / lag
+http://audiograins.com/blog/2012/04/autocorrelation-for-tempo-estimation/
+
+but i also was looking into: 
+http://resources.mpi-inf.mpg.de/departments/d4/teaching/ss2010/mp_mm/2010_MuellerGrosche_Lecture_MusicProcessing_BeatTracking_handout.pdf
+and this was telling to use Tempo = 60 / log  , i've tried this but the output i was getting, felt wrong i didn't understand what im missing 

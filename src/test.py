@@ -19,26 +19,27 @@ def autoCorrelation(signal):
     # bpm60 = r*60/lag
     # bpm120 = r*120/lag
     # bpm = []
-    bpm = (r * 60) /lag
+    # bpm = 60 /lag
     # bpm[1] = r*120/lag
 
-    return aCorr, r, lag, bpm
+    return aCorr, r, lag
     # Note to self: look up more about scipy.​signal.​signaltools.correlate
-# rand1 = np.random.randint(7, size=3)
-# rand2 = np.random.randint(7, size=2)
-# s1 = np.array([7,5,rand2[0],6,1,rand2[1],5,6,3,rand1[0],rand1[1],rand1[2]] * 20)
-# aCorr, r, lag = autoCorrelation(s1)
-# print(r)
-# print(lag)
-# print(aCorr)
-# print("-"*20)
+rand1 = np.random.randint(7, size=3)
+rand2 = np.random.randint(7, size=2)
+s1 = np.array([7,5,rand2[0],6,1,rand2[1],5,6,3,rand1[0],rand1[1],rand1[2]] * 20)
+aCorr, r, lag = autoCorrelation(s1)
+print(r)
+print(lag)
+print(aCorr)
+# print(bpm)
+print("-"*20)
 s2 = np.random.randint(7, size=1000)
-aCorr, r, lag, bpm = autoCorrelation(s2)
+aCorr, r, lag = autoCorrelation(s2)
 # str(bpm)
 print(r)
 print(lag)
 # print(aCorr)
-print(bpm)
+# print(bpm)
 # print("bmp120:" bpm)
 print("-"*20)
 

@@ -168,16 +168,16 @@ def evalFunc(predictFilePathList, gtFilePathList, evalType):
         P_R_return = [precision, recall]
         return [F_measure, P_R_return, evalValues]
 
-    def autoCorrelation(x):
-        n = x.size
-        norm = (x - np.mean(x))
-        result = np.correlate(norm, norm, mode='same')
-        acorr = result[n//2 + 1:] / (x.var() * np.arange(n-1, n//2, -1))
-        lag = np.abs(acorr).argmax() + 1
-        r = acorr[lag-1]
-        # if np.abs(r) > 0.5:
-        #     print('Autocorrelated with r = {}, lag = {}'. format(r, lag))
-        # else:
-        #     print('Not autocorrelated')
-        return r, lag
+    # def autoCorrelation(signal):
+    #     sigSize = signal.size
+    #     norm = (signal - np.mean(signal))
+    #     result = np.correlate(norm, norm, mode='same')
+    #     aCorr = result[sigSize//2 + 1:] / (signal.var() * np.arange(sigSize-1, sigSize//2, -1))
+    #     lag = np.abs(aCorr).argmax() + 1
+    #     r = aCorr[lag-1]
+    #     if np.abs(r) > 0.5:
+    #         print('Autocorrelated with r = {}, lag = {}'. format(r, lag))
+    #     else:
+    #         print('Not autocorrelated')
+    #     return aCorr, r, lag
         # Note to self: look up more about scipy.​signal.​signaltools.correlate
