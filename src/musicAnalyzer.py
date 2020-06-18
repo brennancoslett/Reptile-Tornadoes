@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 
 class musicAnalzyer:
-    def __init__(self, input_dir=r".\Training Data\train", subsetPositions=None, HFC=True, plot=False):
+    def __init__(self, input_dir=r".\test", subsetPositions=None, HFC=True, plot=False):
         '''
         input_dir = str path to directory containing .wav files and .gt files\n
         subsetPositions: indexes of subset of files in input_dir over which to iterate\n
@@ -126,4 +126,5 @@ class musicAnalzyer:
 
 
 mA = musicAnalzyer()
-mA.analyze()
+mA.detectOnsets()
+mA.copyFiles(newFolderName="predictions")
