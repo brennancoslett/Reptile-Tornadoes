@@ -51,16 +51,104 @@ class musicAnalzyer:
                 for peak in filePeaks:
                     f.write(f'{(peak * frame_length):0.9f}\n')
 
-    def detectBeats(self):
-        '''
-        To be implimented
-        '''
-        pass
-
     def extractTempo(self):
         '''
         To be implimented
+        ClearExcess(importListFromFiles(OneSet output))
+        IOI:
+        array[i] - array[i-1] onsetTime - previousOnsetTime
+
+        The output of the onset detector is a list of every onset in a song
+
+
+        Just subtract [i-1] from I
+
+        Just run the onset detector over the directory and then use listFromFiles to pull all the 
+        data into a bumpy array
+        Numpy Array
+        Shouldn’t need auto correlation tbh, just create the list of IOIs and then count the frequency of each IOI 
+        and pick the one that matches the most
+
+        for loop in range of IOI'S, then IOI[i] compare to lag 0.3-1 ( 0.499999999 is also possible), 
+        and count how many time is what result and get the one with the highest ammount
+
+        have it check it self and put in a new array
+        like 
+        values, counts = np.unique(words, return_counts=True)
+        check what is the highest one in counts, take the index and get what value it is
+
+
+
         '''
+        OnSet= clearExcess(importListFromFile(self.input_dir)) # change the self.input_dir
+        IoI= np.empty_like(OnSet, dtype= OnSet.dtype) # we create a empty np.array
+        for i in range (1,len(OnSet)):
+            IoI[i-1]= OnSet[i] - OnSet[i-1]            # get the IOI thing
+
+        # maybe remove indencies and return_index
+        values, indencies, counts = np.unique(IoI,return_index = True, return_counts=True)  # checks the array and returns
+                                                                                            # Values = each unique value in the array
+                # dont know if this is even needed                                          # Indencies = the index of each Values from the original array (IoI)
+                                                                                            # Count = how many times has each Values accured in the original array (IoI)
+
+        highestCount, index= largest(counts, len(counts))                                   # returns what was the highest count and what index it is on
+        Tempo = 60 / values[index]                                                          # getting the BPM
+                    #values[index] is basically lag
+
+        # idk if this is needed but it just checks if it between 60-200
+        # if Tempo < 60 or Tempo > 200:
+        #     print("The BPM is not within the range of 60-200 BPM\nit is: ", Tempo,"BPM")
+        #     pass
+
+
+        #check this                                                                         # i just copied ur printing thing i think it should work exept the file.stem
+        logfile = Path.joinpath(
+                Path(self.input_dir), file.stem + ".tempo.pr")
+        with logfile.open("w+") as f:
+            f.write(f'{(Tempo):0.9f}\n')
+
+        pass
+
+    def detectBeats(self):
+        '''
+        To be implimented
+
+        I DONT RLY GET THIS
+
+        soooo logically, when i figure out the bpm, i can back track on the onset where 
+        those beets are by looking at what position the in the IOI's were the ones who are = to the decided lag
+                        ^
+                       /I\
+                        I
+                        I
+                    I dont think this works i was looking at the beats.gt and none of the numbers match any number within the onset.gt also after each beat there is some
+                    number idk why or what it is.
+
+
+
+        ummm.... soo what im thinking is i get the Tempo value ( lag ) from the bpm, and have it like
+        ( guessing that the code is run to find everything at once ( saying this cause of the song duration) )
+        to have 
+        duration = librosa.get_duration( filename= "input_dir")         #returns it in seconds ( like a float )
+        then have a array save beats like
+
+        x = []
+        lag = 60/Tempo
+        i = 0
+        j = 1
+        while x[i] < duration:
+            x[i] = lag * j
+            if x[i] < duration:
+                break
+            i++
+            j++
+
+        then just print it the same way as u did in the OnSet function
+        
+        '''
+        # Tempo = clearExcess(importListFromFile(self.input_dir)) # or is just self.input_dir enough
+
+
         pass
 
     def analyze(self, output=False):
@@ -125,6 +213,8 @@ class musicAnalzyer:
             print(','.join(map(str, self.evalValues[i])))
 
 
-mA = musicAnalzyer()
+mA = musicAnalzyer("C:\SchoolJKU\Audio\Reptile-Tornadoes\predictions")
 mA.detectOnsets()
+mA.extractTempo()
+mA.detectBeats()
 mA.copyFiles(newFolderName="predictions")
