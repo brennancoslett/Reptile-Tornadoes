@@ -109,7 +109,7 @@ def evalFunc(predictFilePathList, gtFilePathList, evalType):
     else:
         for i, file in enumerate(predictFilePathList):
             evalValues = []
-            prValues = clearExcess(importListFromFile(file))
+            prValues = importListFromFile(file)
             gtValues = importListFromFile(gtFilePathList[i])
 
             if prValues is None or gtValues is None:
@@ -181,3 +181,19 @@ def evalFunc(predictFilePathList, gtFilePathList, evalType):
     #         print('Not autocorrelated')
     #     return aCorr, r, lag
         # Note to self: look up more about scipy.​signal.​signaltools.correlate
+# def removeValuesFromList(the_list, val):
+#    return [value for value in the_list if value != val]
+
+def largest(arr,n): 
+  
+    # Initialize maximum element 
+    maxNum = arr[0] 
+  
+    # Traverse array elements from second 
+    # and compare every element with  
+    # current maxNum 
+    for i in range(1, n): 
+        if arr[i] > maxNum: 
+            maxNum = arr[i] 
+            ind = i
+    return maxNum, ind
