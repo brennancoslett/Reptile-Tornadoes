@@ -54,32 +54,8 @@ class musicAnalzyer:
 
     def extractTempo(self):
         '''
-        To be implimented
-        ClearExcess(importListFromFiles(OneSet output))
-        IOI:
-        array[i] - array[i-1] onsetTime - previousOnsetTime
-
-        The output of the onset detector is a list of every onset in a song
-
-
-        Just subtract [i-1] from I
-
-        Just run the onset detector over the directory and then use listFromFiles to pull all the 
-        data into a bumpy array
-        Numpy Array
-        Shouldn’t need auto correlation tbh, just create the list of IOIs and then count the frequency of each IOI 
-        and pick the one that matches the most
-
-        for loop in range of IOI'S, then IOI[i] compare to lag 0.3-1 ( 0.499999999 is also possible), 
-        and count how many time is what result and get the one with the highest ammount
-
-        have it check it self and put in a new array
-        like 
-        values, counts = np.unique(words, return_counts=True)
-        check what is the highest one in counts, take the index and get what value it is
-
-
-
+        calculates all IOI's for a given piece. if theyre larger than .2seconds (300bpm) add them to the list of IOI's
+        calc tempo for piece, if tempo is over 200BPM then divide by 2 as it is an octave error.
         '''
         onsets = files_in_dir(self.input_dir, '*.onsets.pr')
         for i, file in tqdm(enumerate(onsets), total=len(onsets)):
