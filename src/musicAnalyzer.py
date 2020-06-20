@@ -88,7 +88,7 @@ class musicAnalzyer:
             beatList = []
             for j in range(1, int(songLength/lag)):
                 for k in range (0, len(onsets)):
-                    if onsets[k] < ((j*lag) * 1.1) and onsets[k] > ((j*lag) * 0.9):
+                    if onsets[k] < ((j*lag) + 0.07) and onsets[k] > ((j*lag) - 0.07):
                         if onsets[k] not in beatList:
                             beatList.append(onsets[k])
                 
