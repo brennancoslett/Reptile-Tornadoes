@@ -22,14 +22,14 @@ class musicAnalzyer:
         if subsetPositions is None:
             subsetPositions = [0, self.input_dirLen]
         self.mb = subsetPositions
+        self.inputted_files = files_in_dir(self.input_dir)[self.mb[0]:self.mb[1]]
 
     def detectOnsets(self):
         print("Detecting Onsets..")
         HFC = self.HFC
-        inputted_files = files_in_dir(self.input_dir)[self.mb[0]:self.mb[1]]
         frame_length = 0
 
-        for i, file in tqdm(enumerate(inputted_files), total=len(inputted_files)):
+        for i, file in tqdm(enumerate(self.inputted_files), total=len(self.inputted_files)):
 
             frame_energies, frame_length = calcFrameEnergies(file, HFC)
 
@@ -45,6 +45,7 @@ class musicAnalzyer:
                     if (frame_energies[subVal + (value - batch_size)] > file_pp_min):
                         filePeaks.append(subVal + (value - batch_size))
 
+            filePeaks = clearExcess(filePeaks)
             logfile = Path.joinpath(
                 Path(self.input_dir), file.stem + ".onsets.pr")
             with logfile.open("w+") as f:
@@ -80,34 +81,21 @@ class musicAnalzyer:
 
 
         '''
-        OnSet= clearExcess(importListFromFile(self.input_dir)) # change the self.input_dir
-        IoI= np.empty_like(OnSet, dtype= OnSet.dtype) # we create a empty np.array
-        for i in range (1,len(OnSet)):
-            IoI[i-1]= OnSet[i] - OnSet[i-1]            # get the IOI thing
-
-        # maybe remove indencies and return_index
-        values, indencies, counts = np.unique(IoI,return_index = True, return_counts=True)  # checks the array and returns
-                                                                                            # Values = each unique value in the array
-                # dont know if this is even needed                                          # Indencies = the index of each Values from the original array (IoI)
-                                                                                            # Count = how many times has each Values accured in the original array (IoI)
-
-        highestCount, index= largest(counts, len(counts))                                   # returns what was the highest count and what index it is on
-        Tempo = 60 / values[index]                                                          # getting the BPM
-                    #values[index] is basically lag
-
-        # idk if this is needed but it just checks if it between 60-200
-        # if Tempo < 60 or Tempo > 200:
-        #     print("The BPM is not within the range of 60-200 BPM\nit is: ", Tempo,"BPM")
-        #     pass
-
-
-        #check this                                                                         # i just copied ur printing thing i think it should work exept the file.stem
-        logfile = Path.joinpath(
-                Path(self.input_dir), file.stem + ".tempo.pr")
-        with logfile.open("w+") as f:
-            f.write(f'{(Tempo):0.9f}\n')
-
-        pass
+        onsets = files_in_dir(self.input_dir, '*.onsets.pr')
+        for i, file in tqdm(enumerate(onsets), total=len(onsets)):
+            onsetList = importListFromFile(file)
+            interOnsetList = [];
+            for i in range(1, len(onsetList)):
+                interOnset = onsetList[i] - onsetList[i-1]
+                if interOnset >= 0.2 and interOnset <= 1:
+                    interOnsetList.append(interOnset)     
+            interOnsetList =np.asarray(interOnsetList)
+            tempo = 60/interOnsetList.mean()
+            if tempo > 200:
+                tempo /= 2
+            logfile = Path.joinpath(Path(self.input_dir), file.stem[:-7] + ".tempo.pr")
+            with logfile.open("w+") as f:
+                f.write(f'{(tempo):0.9f}\n')
 
     def detectBeats(self):
         '''
@@ -213,8 +201,5 @@ class musicAnalzyer:
             print(','.join(map(str, self.evalValues[i])))
 
 
-mA = musicAnalzyer("C:\SchoolJKU\Audio\Reptile-Tornadoes\predictions")
-mA.detectOnsets()
+mA = musicAnalzyer()
 mA.extractTempo()
-mA.detectBeats()
-mA.copyFiles(newFolderName="predictions")

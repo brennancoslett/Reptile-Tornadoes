@@ -109,7 +109,7 @@ def evalFunc(predictFilePathList, gtFilePathList, evalType):
     else:
         for i, file in enumerate(predictFilePathList):
             evalValues = []
-            prValues = clearExcess(importListFromFile(file))
+            prValues = importListFromFile(file)
             gtValues = importListFromFile(gtFilePathList[i])
 
             if prValues is None or gtValues is None:
