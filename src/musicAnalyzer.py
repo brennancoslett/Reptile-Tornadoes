@@ -63,10 +63,10 @@ class musicAnalzyer:
             interOnsetList = [];
             for i in range(1, len(onsetList)):
                 interOnset = onsetList[i] - onsetList[i-1]
-                if interOnset >= 0.2 and interOnset <= 1:
+                if interOnset >= 0.25 and interOnset <= 1:
                     interOnsetList.append(interOnset)     
             interOnsetList =np.asarray(interOnsetList)
-            tempo = 60/interOnsetList.mean()
+            tempo = 60/(interOnsetList.mean())
             if tempo > 200:
                 tempo /= 2
             logfile = Path.joinpath(Path(self.input_dir), file.stem[:-7] + ".tempo.pr")
